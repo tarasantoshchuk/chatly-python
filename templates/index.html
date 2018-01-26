@@ -1,0 +1,218 @@
+<html>
+    <head>
+        <title>Chatly</title>
+    </head>
+  <link rel="stylesheet" href="../static/css/index.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="../static/js/index.js"></script>
+    <body>
+    <nav class="navbar navbar-inverse">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#/" id="home-btn">Chatly</a>
+        </div>
+        <ul class="nav navbar-nav navbar-right">
+            <li><a href="#/">{{ username }}</a></li>
+            {% if not loggedIn %}
+            <li><a id="login" href="#"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+          {% else %}
+            <li><a id="logout" href="#"><span class="glyphicon glyphicon-log-in"></span> Logout</a></li>
+          {% endif %}
+        </ul>
+      </div>
+    </nav>
+    <div class="container" id="main"></div>
+    <div class="container" data-bind="with : chosenHome">
+        <h1 data-bind="visible: !$root.isAdmin()">My chats</h1>
+        <div data-bind="visible: !$root.isAdmin()" class="row">
+          <div class="col-md-4">
+              <div id="financial-accounts" class="list-group" data-bind="foreach: $root.accounts, visible: $root.accounts().length > 0">
+                      <a class="list-group-item" data-bind="click: $root.goToAccountDetails, text : name"></a>
+              </div>
+              <a class="btn btn-primary" href="#/add_account">Create new chat</a>
+          </div>
+        </div>
+        <h1 data-bind="visible: !$root.isAdmin()">Chats with me</h1>
+        <div data-bind="visible: !$root.isAdmin()" class="row">
+            <div class="col-md-4">
+                <div id="shared-accounts" class="list-group" data-bind="foreach: $root.sharedAccounts, visible: $root.sharedAccounts().length > 0">
+                        <a class="list-group-item" data-bind="click: $root.goToAccountDetails, text : name"></a>
+                </div>
+            </div>
+        </div>
+        <h1  data-bind="visible: $root.isAdmin">All Chats</h1>
+        <div  data-bind="visible: $root.isAdmin" class="row">
+            <div class="col-md-4">
+                <div id="shared-accounts" class="list-group" data-bind="foreach: $root.allAccounts, visible: $root.allAccounts().length > 0">
+                        <a class="list-group-item" data-bind="click: $root.goToAccountDetails, text : name"></a>
+                </div>
+            </div>
+        </div>
+    </div><!-- 
+    <div class="container" data-bind="with : chosenAddTransaction">
+      <form id="add_transaction_form" data-bind="submit : $root.addTransactionSubmit">
+          <div class="form-group">
+              <label for="name" class="control-label col-md-2">Message</label>
+              <input type="text" name="name" id="name" tabindex="1" class="form-control" placeholder="Type your message..." data-bind="value: $root.newTransactionName" value="">
+          </div>
+      </form>
+      <div class="form-group">
+          <button id="add_transaction_form_submit" class="btn btn-primary" data-bind="click : $root.addTransactionSubmit">Add</button>
+      </div>
+    </div> -->
+    <div class="container" data-bind="with : chosenAddSharedAccount">
+      <form id="add_account_form">
+          <div class="form-group">
+              <label for="name" class="control-label col-md-2">Name</label>
+              <input type="text" name="name" id="name" tabindex="1" class="form-control" data-bind="value:$root.newSharedAccountName" placeholder="Name" value="">
+          </div>
+
+      </form>
+      <div class="form-group">
+          <button id="add_account_submit" class="btn btn-primary" data-bind="click: $root.addSharedAccountSubmit">Invite</button>
+      </div>
+    </div>
+    <div class="container" data-bind="with : chosenAddAccount">
+      <form id="add_account_form">
+          <div class="form-group">
+              <label for="name" class="control-label col-md-2">Title</label>
+              <input type="text" name="name" id="name" tabindex="1" class="form-control" data-bind="value:$root.newAccountName" placeholder="Add a title..." value="">
+          </div>
+
+      </form>
+      <div class="form-group">
+          <button id="add_account_submit" class="btn btn-primary" data-bind="click: $root.addAccountSubmit">Create</button>
+      </div>
+    </div>
+    <div class="container" data-bind="with : chosenAccountInfo">
+      <div class="form-horizontal well">
+          <div class="form-group">
+              <label for="account-name-div" class="control-label col-md-2">Title</label>
+              <div id="account-name-div" class="col-md-10">
+                  <p id="account-name" class="form-control-static" data-bind="text: name"></p>
+              </div>
+          </div>
+          <div class="form-group">
+              <label for="account-summary-div" class="control-label col-md-2">Created By</label>
+              <div id="account-summary-div" class="col-md-10">
+                  <p id="account-summary" class="form-control-static" data-bind="text: $root.accountOwner"></p>
+              </div>
+          </div>
+      </div>
+        <div class="btn-group" data-bind=" if : owner">
+            <a class="btn btn-primary" data-bind="click: $root.goToEditAccount">Rename</a>
+            <a id="delete_account_submit" class="btn btn-danger" data-bind="click: $root.deleteAccount">Delete</a>
+        </div>
+       <table class="table" data-bind ="visible: $root.accountUsers().length > 0">
+           <thead>
+           <tr>
+                  <th>Chat members</th>
+           </tr>
+           </thead>
+           <tbody id="account-users" data-bind="foreach: $root.accountUsers, visible: $root.accountUsers().length > 0">
+             <td data-bind="text : username"></td>
+           </tbody>
+       </table>
+        <div data-bind=" if : owner">
+            <a class="btn btn-primary" href="#/add_shared_account">Invite user to chat</a>
+        </div>
+       <table class="table">
+           <tbody id="financial-transactions" data-bind="foreach: $root.transactions, visible: $root.transactions().length > 0">
+             <td> <b data-bind="text : username"></b></td>
+             <td data-bind="text : name"></td>
+             <!-- <td data-bind="text : amount"></td> -->
+           </tbody>
+           <tbody id="financial-transactions"></tbody>
+
+       </table>
+      <form id="add_transaction_form" data-bind="submit : $root.addTransactionSubmit">
+          <div class="form-group">
+              <label for="name" class="control-label col-md-2">Message</label>
+              <input type="text" name="name" id="name" tabindex="1" class="form-control" placeholder="Type your message..." data-bind="value: $root.newTransactionName" value="">
+          </div>
+      </form>
+      <div class="form-group">
+          <button id="add_transaction_form_submit" class="btn btn-primary" data-bind="click : $root.addTransactionSubmit">Send message</button>
+      </div>
+
+    </div>
+    <div class="container" data-bind="with : chosenEditAccount">
+        <form id="edit_account_form">
+          <div class="form-group">
+              <label for="name" class="control-label col-md-2">Title</label>
+              <input type="text" name="name" id="name" tabindex="1" class="form-control" data-bind="value:name" placeholder="Change title..." value="">
+          </div>
+
+      </form>
+      <div class="form-group">
+          <button id="add_account_submit" class="btn btn-primary" data-bind="click: $root.editAccount">Rename</button>
+      </div>
+    </div>
+    <div class="container" id="login-container" style="display: none;">
+        <div class="row">
+			<div class="col-md-6 col-md-offset-3">
+				<div class="panel panel-login">
+					<div class="panel-heading">
+						<div class="row">
+							<div class="col-xs-6">
+								<a href="#" class="active" id="login-form-link">Login</a>
+							</div>
+							<div class="col-xs-6">
+								<a href="#" id="register-form-link">Register</a>
+							</div>
+						</div>
+						<hr>
+					</div>
+					<div class="panel-body">
+						<div class="row">
+							<div class="col-lg-12">
+								<form id="login-form">
+									<div class="form-group">
+										<input type="text" name="username" id="username" tabindex="1" class="form-control" placeholder="Username" value="">
+									</div>
+									<div class="form-group">
+										<input type="password" name="password" id="password" tabindex="2" class="form-control" placeholder="Password">
+									</div>
+									<div class="form-group">
+										<div class="row">
+											<div class="col-sm-6 col-sm-offset-3">
+												<input type="submit" name="login-submit" id="login-submit" tabindex="4" class="form-control btn btn-login" value="Log In">
+											</div>
+										</div>
+									</div>
+								</form>
+								<form id="register-form" style="display: none;">
+									<div class="form-group">
+										<input type="text" name="username" id="username" tabindex="1" class="form-control" placeholder="Username" value="">
+									</div>
+									<div class="form-group">
+										<input type="email" name="email" id="email" tabindex="1" class="form-control" placeholder="Email Address" value="">
+									</div>
+									<div class="form-group">
+										<input type="password" name="password" id="password" tabindex="2" class="form-control" placeholder="Password">
+									</div>
+									<div class="form-group">
+										<input type="password" name="confirm-password" id="confirm-password" tabindex="2" class="form-control" placeholder="Confirm Password">
+									</div>
+									<div class="form-group">
+										<div class="row">
+											<div class="col-sm-6 col-sm-offset-3">
+												<input type="submit" name="register-submit" id="register-submit" tabindex="4" class="form-control btn btn-register" value="Register Now">
+											</div>
+										</div>
+									</div>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		 </div>
+    </div>
+    </body>
+    <script type='text/javascript' src='../static/js/lib/knockout.js'></script>
+    <script src="../static/js/lib/sammy.min.js"></script>
+    <script src="../static/js/router.js"></script>
+</html>
