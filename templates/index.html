@@ -50,7 +50,7 @@
                 </div>
             </div>
         </div>
-    </div><!-- 
+    </div><!--
     <div class="container" data-bind="with : chosenAddTransaction">
       <form id="add_transaction_form" data-bind="submit : $root.addTransactionSubmit">
           <div class="form-group">
@@ -118,6 +118,8 @@
         <div data-bind=" if : owner">
             <a class="btn btn-primary" href="#/add_shared_account">Invite user to chat</a>
         </div>
+        <label for="name" class="control-label col-md-2">Please select name of test in format: "test" + "number"</label>
+        <label for="name" class="control-label col-md-2">Amount of tests: 5</label>
        <table class="table">
            <tbody id="financial-transactions" data-bind="foreach: $root.transactions, visible: $root.transactions().length > 0">
              <td> <b data-bind="text : username"></b></td>

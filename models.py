@@ -4,6 +4,19 @@ from sqlalchemy.orm import sessionmaker, relationship
 
 Base = declarative_base()
 
+class Test():
+    Question = ""
+    Answers = []
+    RightAnswer = ""
+    def __init__(self, question, answers, rightAnswer):
+        self.Question = question
+        self.Answers = answers,
+        self.RightAnswer = rightAnswer
+
+    def checkAnswer(self, answer):
+        if self.RightAnswer == answer:
+            return True
+
 
 class User(Base):
     __tablename__ = 'users'
@@ -38,7 +51,7 @@ class AccountMember(Base):
     account_id = Column(Integer, ForeignKey('financial_accounts.id'))
     user = relationship("User")
 
-engine = create_engine('postgres://postgres:Ihtlsyuth@localhost/postgres1', echo=True)
+engine = create_engine('postgres://postgres:qwerty@localhost:5433/postgres', echo=True)
 engine.connect()
 Session = sessionmaker(bind=engine)
 dbsession = Session()
