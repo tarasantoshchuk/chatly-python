@@ -60,12 +60,12 @@ def logout():
     return '', 204
 
 
-@app.route('/account', methods=('POST',))
-def add_account():
+@app.route('/chat', methods=('POST',))
+def add_chat():
     if 'username' in session:
         user = dbsession.query(User).filter(User.username == session['username']).first()
-        account = Account(name=request.form['name'], user_id=user.id)
-        dbsession.add(account)
+        chat = Chat(name=request.form['name'], user_id=user.id)
+        dbsession.add(chat)
         dbsession.commit()
         return '', 204
     return 'Unauthorized', 401
@@ -74,24 +74,24 @@ def add_account():
 @app.route('/home')
 def home():
     if 'username' in session:
-        accounts = dbsession.query(Account).join(User).filter(User.username == session['username']).all()
-        shared_accounts = dbsession.query(Account).join(AccountMember).join(User).filter(
-            User.username == session['username'] and AccountMember.user_id == User.id).all()
-        allAccounts = dbsession.query(Account).all()
+        chats = dbsession.query(Chat).join(User).filter(User.username == session['username']).all()
+        shared_chats = dbsession.query(Chat).join(ChatMember).join(User).filter(
+            User.username == session['username'] and ChatMember.user_id == User.id).all()
+        allChats = dbsession.query(Chat).all()
 
         return json.dumps({
-            'accounts': [{
+            'chats': [{
                 'id': i.id,
                 'name': i.name,
-            } for i in accounts],
-            'shared_accounts': [{
+            } for i in chats],
+            'shared_chats': [{
                 'id': i.id,
                 'name': i.name,
-            } for i in shared_accounts],
-            'all_accounts': [{
+            } for i in shared_chats],
+            'all_chats': [{
                 'id': i.id,
                 'name': i.name,
-            } for i in allAccounts],
+            } for i in allChats],
             'isAdmin': isAdmin(session['username'])
         })
     return 'Unauthorized', 401
@@ -103,88 +103,91 @@ def isAdmin(user):
     return False
 
 
-@app.route('/account/<id>')
-def get_account(id):
+@app.route('/chat/<id>')
+def get_ac(id):
     if 'username' not in session:
         return 'Unauthorized', 401
-    account = dbsession.query(Account).join(User).filter(Account.id == id).first()
-    if not account:
-        return 'account missing', 400
+    chat = dbsession.query(Chat).join(User).filter(Chat.id == id).first()
+    if not chat:
+        return 'chat missing', 400
     user = dbsession.query(User).filter(User.username == session['username']).first()
-    account_members = dbsession.query(AccountMember).join(User).filter(AccountMember.account_id == account.id).all()
-    member = [m for m in account_members if m.user_id == user.id]
-    if account.user_id != user.id and not member and not isAdmin(session['username']):
-        return 'user not in account', 400
-    transactions = [{
+    chat_members = dbsession.query(ChatMember).join(User).filter(ChatMember.chat_id == chat.id).all()
+    member = [m for m in chat_members if m.user_id == user.id]
+    if chat.user_id != user.id and not member and not isAdmin(session['username']):
+        return 'user not in chat', 400
+    messages = [{
         'id': i.id,
-        'name': i.name,
-        'amount': i.amount,
+        'message': i.message,
         'username': i.user.username
-    } for i in dbsession.query(Transaction).join(User).filter(Transaction.account_id == id).all()]
+    } for i in dbsession.query(Message).join(User).filter(Message.chat_id == id).all()]
     return json.dumps({
-        'account': {
+        'chat': {
             'id': id,
-            'name': account.name,
-            'owner': account.user_id == user.id
+            'name': chat.name,
+            'owner': chat.user_id == user.id
         },
-        'owner': account.user.username,
+        'owner': chat.user.username,
         'users': [{
             'username': m.user.username
-        } for m in account_members],
-        'transactions': transactions
+        } for m in chat_members],
+        'messages': messages
     })
 
 
-@app.route('/account', methods=('PUT',))
-def update_account():
+@app.route('/chat', methods=('PUT',))
+def update_chat():
     if 'username' not in session:
         return 'Unauthorized', 401
     id = request.form['id']
-    account = dbsession.query(Account).filter(Account.id == id).first()
-    if not account:
-        return 'account missing', 400
+    chat = dbsession.query(Chat).filter(Chat.id == id).first()
+    if not chat:
+        return 'chat missing', 400
     user = dbsession.query(User).filter(User.username == session['username']).first()
-    if account.user_id != user.id:
-        return 'account missing', 400
-    account.name = request.form['name']
+    if chat.user_id != user.id:
+        return 'chat missing', 400
+    chat.name = request.form['name']
     dbsession.commit()
     return '', 204
 
 
-@app.route('/account', methods=('DELETE',))
-def delete_account():
+@app.route('/chat', methods=('DELETE',))
+def delete_chat():
     if 'username' not in session:
         return 'Unauthorized', 401
     id = request.form['id']
-    account = dbsession.query(Account).join(User).filter(
-        Account.id == id and User.username == session['username']).first()
-    if not account:
-        return 'account missing', 400
-    dbsession.query(AccountMember).filter(AccountMember.account_id == id).delete()
-    dbsession.query(Transaction).filter(Transaction.account_id == id).delete()
-    dbsession.delete(account)
+    chat = dbsession.query(Chat).join(User).filter(
+        Chat.id == id and User.username == session['username']).first()
+    if not chat:
+        return 'chat missing', 400
+    dbsession.query(ChatMember).filter(ChatMember.chat_id == id).delete()
+    dbsession.query(Message).filter(Message.chat_id == id).delete()
+    dbsession.delete(chat)
     dbsession.commit()
     return '', 204
 
 
-@app.route('/account_member', methods=('POST',))
-def account_member_add():
+@app.route('/chat_member', methods=('POST',))
+def chat_member_add():
     '''
-    Add user to account
-    id - account id
+    Add user to chat
+    id - chat id
     username - user name
     '''
     if 'username' not in session:
         return 'Unauthorized', 401
-    account = dbsession.query(Account).join(User).filter(
-        User.username == session['username'] and Account.id == request.form['id']).first()
-    if not account:
-        return 'account missing', 400
+    print '_________________________________'
+    print request.form['id']
+    chat = dbsession.query(Chat).filter(Chat.id == request.form['id']).first()
+    if not chat:
+        return 'chat missing', 400
     user = dbsession.query(User).filter(User.username == request.form['username']).first()
     if not user or user.username == session['username']:
         return 'user missing', 400
-    account_member = AccountMember(user_id=user.id, account_id=account.id)
-    dbsession.add(account_member)
+    print '_________________________________'
+    print chat.id
+    print user.id
+    chat_member = ChatMember(user_id=user.id, chat_id=chat.id)
+    dbsession.add(chat_member)
     dbsession.commit()
     return jsonify({
         'id': user.id,
@@ -192,56 +195,67 @@ def account_member_add():
     })
 
 
-@app.route('/account_member', methods=('DELETE',))
-def account_member_remove():
+@app.route('/chat_member', methods=('DELETE',))
+def chat_member_remove():
     '''
-    Remove user from account
+    Remove user from chat
     Params:
-    id - account id
+    id - chat id
     userId - user id
     '''
     if 'username' not in session:
         return 'Unauthorized', 401
-    account = dbsession.query(Account).join(User).filter(
-        User.username == session['username'] and Account.id == request.form['id']).first()
-    if not account:
-        return 'account missing', 400
-    dbsession.query(AccountMember).filter(
-        AccountMember.user_id == request.form['userId'] and AccountMember.account_id == request.form['id']).delete()
+    chat = dbsession.query(Chat).join(User).filter(
+        User.username == session['username'] and Chat.id == request.form['id']).first()
+    if not chat:
+        return 'chat missing', 400
+    dbsession.query(ChatMember).filter(
+        ChatMember.user_id == request.form['userId'] and ChatMember.chat_id == request.form['id']).delete()
     dbsession.commit()
     return '', 204
 
-@app.route('/add_transaction', methods=('POST',))
-def add_transaction():
+@app.route('/add_message', methods=('POST',))
+def add_message():
     '''newId = id%tests.__sizeof__()'''
     if 'username' not in session:
         return 'Unauthorized', 401
     user = dbsession.query(User).filter(User.username == session['username']).first()
-    transaction = Transaction(name=request.form['name'], amount=request.form['amount'], user_id=user.id,
-                              account_id=request.form['account_id'])
-    dbsession.add(transaction)
-    admin = dbsession.query(User).filter(User.username == 'username').first()
-    userAnswer = request.form['name']
-    if len(userAnswer) > 1 :
-        if tests.__contains__(userAnswer):
-            test = tests[userAnswer]
-            message = test.Question
-            transaction = Transaction(name=message, amount=0, user_id=2,
-                                      account_id=request.form['account_id'])
-            dbsession.add(transaction)
-    else:
-        testKey = 'test1'
-        test = tests[testKey]
-        userAnswer = request.form['name']
-        if userAnswer != 'a':
-            transaction = Transaction(name='Yes', amount=0, user_id=2,
-                                      account_id=request.form['account_id'])
-            dbsession.add(transaction)
-        else:
-            transaction = Transaction(name='No', amount=0, user_id=2,
-                                      account_id=request.form['account_id'])
-            dbsession.add(transaction)
+    message = Message(message=request.form['message'], user_id=user.id,
+                              chat_id=request.form['chat_id'])
+    dbsession.add(message)
+    bot = dbsession.query(User).filter(User.username == 'bot').first()
+    hasChatBot = dbsession.query(ChatMember).filter(ChatMember.chat_id == request.form['chat_id']).filter(ChatMember.user_id == bot.id).all()
 
+    userAnswer = request.form['message']
+    if len(hasChatBot) > 0:
+        if userAnswer == 'help':
+            botMessage = Message(message='Please choose test in format: "test + number of test".\n'
+                                         'Amount of test = {:d}'.format(len(tests)), user_id=bot.id,
+                                 chat_id=request.form['chat_id'])
+            dbsession.add(botMessage)
+        if len(userAnswer) > 1:
+            if tests.__contains__(userAnswer):
+                test = tests[userAnswer]
+                message = test.Question
+                botMessage = Message(message=message, user_id=bot.id,
+                                     chat_id=request.form['chat_id'])
+                dbsession.add(botMessage)
+        if ['a', 'b', 'c'].__contains__(userAnswer):
+            lastMessage = dbsession.query(Message).filter(Message.user_id == bot.id).order_by('-id').first()
+            rightAnswer = 'x'
+            for test in tests:
+                if tests[test].Question == lastMessage.message:
+                    rightAnswer = tests[test].RightAnswer
+            if userAnswer == rightAnswer and rightAnswer != 'x':
+                botMessage = Message(message='Yes, you are right', user_id=bot.id,
+                                     chat_id=request.form['chat_id'])
+                dbsession.add(botMessage)
+            elif rightAnswer == 'x':
+                print ''
+            else:
+                botMessage = Message(message='No, the right answer is: '+ rightAnswer, user_id=bot.id,
+                                     chat_id=request.form['chat_id'])
+                dbsession.add(botMessage)
 
     dbsession.commit()
     return '', 204

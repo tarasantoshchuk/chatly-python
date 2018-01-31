@@ -1,19 +1,18 @@
 $(document).ready(function() {
 
-function Account(data) {
+function Chat(data) {
   this.id = ko.observable(data.id);
   this.name = ko.observable(data.name);
   this.owner = ko.observable(data.owner);
 }
-function SharedAccount(data) {
+function SharedChat(data) {
   this.id = ko.observable(data.id);
   this.name = ko.observable(data.name);
 }
 
-function Transaction(data) {
+function Message(data) {
   this.id = ko.observable(data.id);
-  this.name = ko.observable(data.name);
-  this.amount = ko.observable(data.amount);
+  this.message = ko.observable(data.message);
   this.username = ko.observable(data.username)
 }
 
@@ -25,50 +24,50 @@ function AppViewModel() {
   var self = this;
 
   self.isAdmin = ko.observable(false);
-  self.allAccounts = ko.observableArray([])
-  self.accounts = ko.observableArray([]);
-  self.sharedAccounts = ko.observableArray([]);
-  self.transactions = ko.observableArray([]);
-  self.accountUsers = ko.observableArray([]);
-  self.accountOwner = ko.observable("");
+  self.allChats = ko.observableArray([])
+  self.chats = ko.observableArray([]);
+  self.sharedChats = ko.observableArray([]);
+  self.messages = ko.observableArray([]);
+  self.chatUsers = ko.observableArray([]);
+  self.chatOwner = ko.observable("");
 
-  self.accountSummary = ko.observable(0);
+  self.chatSummary = ko.observable(0);
 
-  self.newAccountName = ko.observable("");
-  self.newSharedAccountName = ko.observable("");
+  self.newChatName = ko.observable("");
+  self.newSharedChatName = ko.observable("");
 
-  self.newTransactionName = ko.observable("");
-  self.newTransactionAmount = ko.observable(0);
+  self.newMessageName = ko.observable("");
+  self.newMessageAmount = ko.observable(0);
 
   self.chosenHome = ko.observable(null);
-  self.chosenAccountInfo = ko.observable(null);
-  self.chosenAccountInfoData = ko.observable(null);
-  self.chosenAddAccount = ko.observable(null);
-  self.chosenAddTransaction = ko.observable(null);
-  self.chosenAddSharedAccount = ko.observable(null);
-  self.chosenEditAccount = ko.observable(null);
+  self.chosenChatInfo = ko.observable(null);
+  self.chosenChatInfoData = ko.observable(null);
+  self.chosenAddChat = ko.observable(null);
+  self.chosenAddMessage = ko.observable(null);
+  self.chosenAddSharedChat = ko.observable(null);
+  self.chosenEditChat = ko.observable(null);
 
-  self.addAccountSubmit = function(e) {
-    $.post('/account', {
-      name: self.newAccountName
+  self.addChatSubmit = function(e) {
+    $.post('/chat', {
+      name: self.newChatName
     }).then(function(data) {
-      self.newAccountName("");
+      self.newChatName("");
       location.hash = "#/";
     }).catch(function(error) {
 
     })
   };
 
-  self.editAccount = function(e) {
+  self.editChat = function(e) {
   $.ajax({
-        url: '/account',
+        url: '/chat',
         type: 'PUT',
         data: {
             id: e.id,
             name: e.name
         },
         success: function() {
-          location.hash = "#/account/" + e.id;
+          location.hash = "#/chat/" + e.id;
         },
         error: function(error) {
 
@@ -76,9 +75,9 @@ function AppViewModel() {
     });
   }
 
-  self.deleteAccount = function(e) {
+  self.deleteChat = function(e) {
     $.ajax({
-        url: '/account',
+        url: '/chat',
         type: 'DELETE',
         data: {
             id: e.id
@@ -92,26 +91,25 @@ function AppViewModel() {
     });
   }
 
-  self.addSharedAccountSubmit = function(e) {
-    $.post('/account_member', {
-      id : self.chosenAccountInfoData().id,
-      username: self.newSharedAccountName
+  self.addSharedChatSubmit = function(e) {
+    $.post('/chat_member', {
+      id : self.chosenChatInfoData().id,
+      username: self.newSharedChatName
     }).then(function(data) {
-      self.newSharedAccountName("");
-      location.hash = "#/account/" + self.chosenAccountInfoData().id
+      self.newSharedChatName("");
+      location.hash = "#/chat/" + self.chosenChatInfoData().id
     }).catch(function(error) {
       console.log(error);
     })
   };
-  self.addTransactionSubmit = function(e) {
+  self.addMessageSubmit = function(e) {
 
-    $.post('/add_transaction', {
-      name: self.newTransactionName,
-      amount: self.newTransactionAmount,
-      account_id: self.chosenAccountInfoData().id
+    $.post('/add_message', {
+      message: self.newMessageName,
+      chat_id: self.chosenChatInfoData().id
     }).then(function(data) {
-      self.newTransactionName("");
-      self.newTransactionAmount(0);
+      self.newMessageName("");
+      self.newMessageAmount(0);
       location.reload();
     }).catch(function(error) {
 
@@ -119,109 +117,106 @@ function AppViewModel() {
   };
 
 
-  self.goToAddTransaction = function(acc) {
-    location.hash = "#/transaction/" + acc.id
+  self.goToAddMessage = function(acc) {
+    location.hash = "#/message/" + acc.id
   }
 
-  self.goToEditAccount = function(acc) {
-    location.hash = "#/account/edit/" + acc.id
+  self.goToEditChat = function(acc) {
+    location.hash = "#/chat/edit/" + acc.id
   }
 
-  self.goToAccountDetails = function(acc) {
-    location.hash = "#/account/" + acc.id();
+  self.goToChatDetails = function(acc) {
+    location.hash = "#/chat/" + acc.id();
   }
 
   Sammy("#main", function () {
     this.get('#/', function (context) {
-      self.chosenAddAccount(null);
-      self.chosenAccountInfo(null);
-      self.chosenAccountInfoData(null);
-      self.chosenAddTransaction(null);
-      self.chosenAddSharedAccount(null);
-      self.chosenEditAccount(null);
+      self.chosenAddChat(null);
+      self.chosenChatInfo(null);
+      self.chosenChatInfoData(null);
+      self.chosenAddMessage(null);
+      self.chosenAddSharedChat(null);
+      self.chosenEditChat(null);
 
       $.get('/home').then(function(json) {
         self.isAdmin(JSON.parse(json).isAdmin);
         self.chosenHome("home");
-        var mappedAllAccounts = $.map(JSON.parse(json).all_accounts, function(item) { return new Account(item) });
-        self.allAccounts(mappedAllAccounts);
-        var mappedAccounts = $.map(JSON.parse(json).accounts, function(item) { return new Account(item) });
-        self.accounts(mappedAccounts);
-        var mappedSharedAccounts = $.map(JSON.parse(json).shared_accounts, function(item) { return new SharedAccount(item) });
-        self.sharedAccounts(mappedSharedAccounts);
+        var mappedAllChats = $.map(JSON.parse(json).all_chats, function(item) { return new Chat(item) });
+        self.allChats(mappedAllChats);
+        var mappedChats = $.map(JSON.parse(json).chats, function(item) { return new Chat(item) });
+        self.chats(mappedChats);
+        var mappedSharedChats = $.map(JSON.parse(json).shared_chats, function(item) { return new SharedChat(item) });
+        self.sharedChats(mappedSharedChats);
         }).catch(function(error) {
           self.chosenHome(null);
           context.partial('../static/views/about.html').then(function() {});
       })
     });
-    this.get('#/add_account', function (context) {
+    this.get('#/add_chat', function (context) {
       self.chosenHome(null);
-      self.chosenAccountInfo(null);
-      self.chosenAddTransaction(null);
-      self.chosenAddSharedAccount(null);
-      self.chosenEditAccount(null);
+      self.chosenChatInfo(null);
+      self.chosenAddMessage(null);
+      self.chosenAddSharedChat(null);
+      self.chosenEditChat(null);
 
       $.get('/home').then(function(json) {
-        self.chosenAddAccount("add");
+        self.chosenAddChat("add");
       })
     });
-    this.get('#/add_shared_account', function (context) {
+    this.get('#/add_shared_chat', function (context) {
       self.chosenHome(null);
-      self.chosenAccountInfo(null);
-      self.chosenAddTransaction(null);
-      self.chosenAddAccount(null);
-      self.chosenEditAccount(null);
-      self.chosenAddSharedAccount("add");
+      self.chosenChatInfo(null);
+      self.chosenAddMessage(null);
+      self.chosenAddChat(null);
+      self.chosenEditChat(null);
+      self.chosenAddSharedChat("add");
     });
-    this.get('#/account/:id', function(context) {
+    this.get('#/chat/:id', function(context) {
       self.chosenHome(null);
-      self.chosenAddAccount(null);
-      self.chosenAddTransaction(null);
-      self.chosenAddSharedAccount(null);
-      self.chosenEditAccount(null);
+      self.chosenAddChat(null);
+      self.chosenAddMessage(null);
+      self.chosenAddSharedChat(null);
+      self.chosenEditChat(null);
 
-      $.get('/account/' + context.params.id).then(function(json) {
-        var account = JSON.parse(json).account;
-        self.chosenAccountInfo(account);
-        self.chosenAccountInfoData(account);
-        var transactions = JSON.parse(json).transactions;
+      $.get('/chat/' + context.params.id).then(function(json) {
+        var chat = JSON.parse(json).chat;
+        self.chosenChatInfo(chat);
+        self.chosenChatInfoData(chat);
+        var messages = JSON.parse(json).messages;
 
-        var mappedTransactions = $.map(transactions, function(item) { return new Transaction(item) });
-        self.transactions(mappedTransactions);
+        var mappedMessages = $.map(messages, function(item) { return new Message(item) });
+        self.messages(mappedMessages);
         var users = JSON.parse(json).users;
         var mappedUsers =  $.map(users, function(item) { return new User(item) });
 
         var owner = JSON.parse(json).owner;
-        self.accountOwner(owner)
-        self.accountUsers(mappedUsers)
+        self.chatOwner(owner)
+        self.chatUsers(mappedUsers)
 
         var amount = 0;
-        transactions.forEach(function(t) {
-          amount += t.amount;
-        }, this);
-        self.accountSummary(amount);
+        self.chatSummary(amount);
 
 
       })
     })
-    this.get('#/account/edit/:id', function(context) {
+    this.get('#/chat/edit/:id', function(context) {
         self.chosenHome(null);
-        self.chosenAddAccount(null);
-        self.chosenAddTransaction(null);
-        self.chosenAddSharedAccount(null);
-        self.chosenAccountInfo(null);
-        self.chosenEditAccount({
-            id: self.chosenAccountInfoData().id,
-            name: self.chosenAccountInfoData().name
+        self.chosenAddChat(null);
+        self.chosenAddMessage(null);
+        self.chosenAddSharedChat(null);
+        self.chosenChatInfo(null);
+        self.chosenEditChat({
+            id: self.chosenChatInfoData().id,
+            name: self.chosenChatInfoData().name
         });
     })
-    this.get('#/transaction/:id', function(context) {
+    this.get('#/message/:id', function(context) {
       self.chosenHome(null);
-      self.chosenAddAccount(null);
-      self.chosenAccountInfo(null);
-      self.chosenAddSharedAccount(null);
-      self.chosenEditAccount(null);
-      self.chosenAddTransaction('transaction');
+      self.chosenAddChat(null);
+      self.chosenChatInfo(null);
+      self.chosenAddSharedChat(null);
+      self.chosenEditChat(null);
+      self.chosenAddMessage('message');
     })
   }).run("#/");
 }

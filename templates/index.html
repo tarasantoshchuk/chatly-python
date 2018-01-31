@@ -28,65 +28,54 @@
         <h1 data-bind="visible: !$root.isAdmin()">My chats</h1>
         <div data-bind="visible: !$root.isAdmin()" class="row">
           <div class="col-md-4">
-              <div id="financial-accounts" class="list-group" data-bind="foreach: $root.accounts, visible: $root.accounts().length > 0">
-                      <a class="list-group-item" data-bind="click: $root.goToAccountDetails, text : name"></a>
+              <div id="financial-accounts" class="list-group" data-bind="foreach: $root.chats, visible: $root.chats().length > 0">
+                      <a class="list-group-item" data-bind="click: $root.goToChatDetails, text : name"></a>
               </div>
-              <a class="btn btn-primary" href="#/add_account">Create new chat</a>
+              <a class="btn btn-primary" href="#/add_chat">Create new chat</a>
           </div>
         </div>
         <h1 data-bind="visible: !$root.isAdmin()">Chats with me</h1>
         <div data-bind="visible: !$root.isAdmin()" class="row">
             <div class="col-md-4">
-                <div id="shared-accounts" class="list-group" data-bind="foreach: $root.sharedAccounts, visible: $root.sharedAccounts().length > 0">
-                        <a class="list-group-item" data-bind="click: $root.goToAccountDetails, text : name"></a>
+                <div id="shared-accounts" class="list-group" data-bind="foreach: $root.sharedChats, visible: $root.sharedChats().length > 0">
+                        <a class="list-group-item" data-bind="click: $root.goToChatDetails, text : name"></a>
                 </div>
             </div>
         </div>
         <h1  data-bind="visible: $root.isAdmin">All Chats</h1>
         <div  data-bind="visible: $root.isAdmin" class="row">
             <div class="col-md-4">
-                <div id="shared-accounts" class="list-group" data-bind="foreach: $root.allAccounts, visible: $root.allAccounts().length > 0">
-                        <a class="list-group-item" data-bind="click: $root.goToAccountDetails, text : name"></a>
+                <div id="shared-accounts" class="list-group" data-bind="foreach: $root.allChats, visible: $root.allChats().length > 0">
+                        <a class="list-group-item" data-bind="click: $root.goToChatDetails, text : name"></a>
                 </div>
             </div>
         </div>
-    </div><!--
-    <div class="container" data-bind="with : chosenAddTransaction">
-      <form id="add_transaction_form" data-bind="submit : $root.addTransactionSubmit">
-          <div class="form-group">
-              <label for="name" class="control-label col-md-2">Message</label>
-              <input type="text" name="name" id="name" tabindex="1" class="form-control" placeholder="Type your message..." data-bind="value: $root.newTransactionName" value="">
-          </div>
-      </form>
-      <div class="form-group">
-          <button id="add_transaction_form_submit" class="btn btn-primary" data-bind="click : $root.addTransactionSubmit">Add</button>
-      </div>
-    </div> -->
-    <div class="container" data-bind="with : chosenAddSharedAccount">
+    </div>
+    <div class="container" data-bind="with : chosenAddSharedChat">
       <form id="add_account_form">
           <div class="form-group">
               <label for="name" class="control-label col-md-2">Name</label>
-              <input type="text" name="name" id="name" tabindex="1" class="form-control" data-bind="value:$root.newSharedAccountName" placeholder="Name" value="">
+              <input type="text" name="name" id="name" tabindex="1" class="form-control" data-bind="value:$root.newSharedChatName" placeholder="Name" value="">
           </div>
 
       </form>
       <div class="form-group">
-          <button id="add_account_submit" class="btn btn-primary" data-bind="click: $root.addSharedAccountSubmit">Invite</button>
+          <button id="add_account_submit" class="btn btn-primary" data-bind="click: $root.addSharedChatSubmit">Invite</button>
       </div>
     </div>
-    <div class="container" data-bind="with : chosenAddAccount">
+    <div class="container" data-bind="with : chosenAddChat">
       <form id="add_account_form">
           <div class="form-group">
               <label for="name" class="control-label col-md-2">Title</label>
-              <input type="text" name="name" id="name" tabindex="1" class="form-control" data-bind="value:$root.newAccountName" placeholder="Add a title..." value="">
+              <input type="text" name="name" id="name" tabindex="1" class="form-control" data-bind="value:$root.newChatName" placeholder="Add a title..." value="">
           </div>
 
       </form>
       <div class="form-group">
-          <button id="add_account_submit" class="btn btn-primary" data-bind="click: $root.addAccountSubmit">Create</button>
+          <button id="add_account_submit" class="btn btn-primary" data-bind="click: $root.addChatSubmit">Create</button>
       </div>
     </div>
-    <div class="container" data-bind="with : chosenAccountInfo">
+    <div class="container" data-bind="with : chosenChatInfo">
       <div class="form-horizontal well">
           <div class="form-group">
               <label for="account-name-div" class="control-label col-md-2">Title</label>
@@ -97,50 +86,47 @@
           <div class="form-group">
               <label for="account-summary-div" class="control-label col-md-2">Created By</label>
               <div id="account-summary-div" class="col-md-10">
-                  <p id="account-summary" class="form-control-static" data-bind="text: $root.accountOwner"></p>
+                  <p id="account-summary" class="form-control-static" data-bind="text: $root.chatOwner"></p>
               </div>
           </div>
       </div>
         <div class="btn-group" data-bind=" if : owner">
-            <a class="btn btn-primary" data-bind="click: $root.goToEditAccount">Rename</a>
-            <a id="delete_account_submit" class="btn btn-danger" data-bind="click: $root.deleteAccount">Delete</a>
+            <a class="btn btn-primary" data-bind="click: $root.goToEditChat">Rename</a>
+            <a id="delete_account_submit" class="btn btn-danger" data-bind="click: $root.deleteChat">Delete</a>
         </div>
-       <table class="table" data-bind ="visible: $root.accountUsers().length > 0">
+       <table class="table" data-bind ="visible: $root.chatUsers().length > 0">
            <thead>
            <tr>
                   <th>Chat members</th>
            </tr>
            </thead>
-           <tbody id="account-users" data-bind="foreach: $root.accountUsers, visible: $root.accountUsers().length > 0">
+           <tbody id="account-users" data-bind="foreach: $root.chatUsers, visible: $root.chatUsers().length > 0">
              <td data-bind="text : username"></td>
            </tbody>
        </table>
         <div data-bind=" if : owner">
-            <a class="btn btn-primary" href="#/add_shared_account">Invite user to chat</a>
+            <a class="btn btn-primary" href="#/add_shared_chat">Invite user to chat</a>
         </div>
-        <label for="name" class="control-label col-md-2">Please select name of test in format: "test" + "number"</label>
-        <label for="name" class="control-label col-md-2">Amount of tests: 5</label>
        <table class="table">
-           <tbody id="financial-transactions" data-bind="foreach: $root.transactions, visible: $root.transactions().length > 0">
+           <tbody id="financial-transactions" data-bind="foreach: $root.messages, visible: $root.messages().length > 0">
              <td> <b data-bind="text : username"></b></td>
-             <td data-bind="text : name"></td>
-             <!-- <td data-bind="text : amount"></td> -->
+             <td data-bind="text : message"></td>
            </tbody>
            <tbody id="financial-transactions"></tbody>
 
        </table>
-      <form id="add_transaction_form" data-bind="submit : $root.addTransactionSubmit">
+      <form id="add_transaction_form" data-bind="submit : $root.addMessageSubmit">
           <div class="form-group">
               <label for="name" class="control-label col-md-2">Message</label>
-              <input type="text" name="name" id="name" tabindex="1" class="form-control" placeholder="Type your message..." data-bind="value: $root.newTransactionName" value="">
+              <input type="text" name="name" id="name" tabindex="1" class="form-control" placeholder="Type your message..." data-bind="value: $root.newMessageName" value="">
           </div>
       </form>
       <div class="form-group">
-          <button id="add_transaction_form_submit" class="btn btn-primary" data-bind="click : $root.addTransactionSubmit">Send message</button>
+          <button id="add_transaction_form_submit" class="btn btn-primary" data-bind="click : $root.addMessageSubmit">Send message</button>
       </div>
 
     </div>
-    <div class="container" data-bind="with : chosenEditAccount">
+    <div class="container" data-bind="with : chosenEditChat">
         <form id="edit_account_form">
           <div class="form-group">
               <label for="name" class="control-label col-md-2">Title</label>
@@ -149,7 +135,7 @@
 
       </form>
       <div class="form-group">
-          <button id="add_account_submit" class="btn btn-primary" data-bind="click: $root.editAccount">Rename</button>
+          <button id="add_account_submit" class="btn btn-primary" data-bind="click: $root.editChat">Rename</button>
       </div>
     </div>
     <div class="container" id="login-container" style="display: none;">

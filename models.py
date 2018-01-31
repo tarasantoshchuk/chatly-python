@@ -26,32 +26,31 @@ class User(Base):
     password = Column(String)
 
 
-class Account(Base):
-    __tablename__ = 'financial_accounts'
+class Chat(Base):
+    __tablename__ = 'chats'
     id = Column(Integer, primary_key=True)
     name = Column(String)
     user_id = Column(Integer, ForeignKey('users.id'))
     user = relationship("User")
 
 
-class Transaction(Base):
-    __tablename__ = 'transactions'
+class Message(Base):
+    __tablename__ = 'messages'
     id = Column(Integer, primary_key=True)
-    name = Column(String)
-    amount = Column(Float)
+    message = Column(String)
     user_id = Column(Integer, ForeignKey('users.id'))
-    account_id = Column(Float, ForeignKey('financial_accounts.id'))
+    chat_id = Column(Float, ForeignKey('chats.id'))
     user = relationship("User")
 
 
-class AccountMember(Base):
-    __tablename__ = 'account_members'
+class ChatMember(Base):
+    __tablename__ = 'chat_members'
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'))
-    account_id = Column(Integer, ForeignKey('financial_accounts.id'))
+    chat_id = Column(Integer, ForeignKey('chats.id'))
     user = relationship("User")
 
-engine = create_engine('postgres://postgres:qwerty@localhost:5433/postgres', echo=True)
+engine = create_engine('postgres://postgres:Romeo702@localhost:5432/postgres1', echo=True)
 engine.connect()
 Session = sessionmaker(bind=engine)
 dbsession = Session()
